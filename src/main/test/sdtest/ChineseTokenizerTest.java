@@ -1,9 +1,9 @@
 package sdtest;
 
+import nlp.tokenizations.tokenizerFactory.ChineseTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizer.Tokenizer;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.junit.Test;
-import nlp.tokenizations.tokenizerFactory.ChineseTokenizerFactory;
 
 import java.io.*;
 
@@ -21,14 +21,46 @@ public class ChineseTokenizerTest {
             "演艺事业外，文章也参与公益慈善事业，2010年成立大福自闭症关爱基金。";
     private final String[] expect = {"青山绿水", "和", "伟大", "的", "科学家", "让", "世界", "更", "美好", "和平"};
 
+    //正面语料处理
     @Test
     public void testChineseTokenizer() throws IOException {
-//        InputStream inputStream = new FileInputStream(new File("./src/main/java/resources/天龙八部.txt"));
-        BufferedReader br = new BufferedReader(new FileReader(new File("./src/main/java/resources/天龙八部.txt")));
-        FileWriter fw = new FileWriter(new File("./src/main/java/resources/天龙八部_result.txt"));
+        BufferedReader br = new BufferedReader(new FileReader(new File("./src/main/java/resources/正面.txt")));
+        File target = new File("./src/main/java/resources/positive.txt");
+        if(!target.exists()){
+            target.createNewFile();
+        }
+        FileWriter fw = new FileWriter(target);
         TokenizerFactory tokenizerFactory = new ChineseTokenizerFactory();
         String lineStr = "";
-        while (!lineStr.contains("全书完")){
+        while (lineStr!=null){
+            fw.write("正面 ");
+            lineStr = br.readLine();
+            Tokenizer tokenizer = tokenizerFactory.create(lineStr);
+            for (int i = 0; i < tokenizer.countTokens(); ++i) {
+                String nextToken = tokenizer.nextToken();
+                System.out.println(nextToken);
+                fw.write(nextToken+" ");
+//            assertEquals(nextToken, expect[i]);
+            }
+            fw.write("\r\n");
+        }
+        fw.flush();
+        fw.close();
+    }
+
+    //负面语料处理
+    @Test
+    public void negativeChineseTokenizer() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(new File("./src/main/java/resources/负面.txt")));
+        File target = new File("./src/main/java/resources/negative.txt");
+        if(!target.exists()){
+            target.createNewFile();
+        }
+        FileWriter fw = new FileWriter(target);
+        TokenizerFactory tokenizerFactory = new ChineseTokenizerFactory();
+        String lineStr = "";
+        while (lineStr!=null){
+            fw.write("负面 ");
             lineStr = br.readLine();
             Tokenizer tokenizer = tokenizerFactory.create(lineStr);
             for (int i = 0; i < tokenizer.countTokens(); ++i) {
@@ -42,5 +74,4 @@ public class ChineseTokenizerTest {
         fw.flush();
         fw.close();
     }
-
 }
