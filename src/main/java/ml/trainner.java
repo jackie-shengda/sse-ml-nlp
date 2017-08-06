@@ -94,7 +94,16 @@ public class trainner {
         Broadcast<VocabCache<VocabWord>> vocabCorpus = textPipeLineCorpus.getBroadCastVocabCache();
         JavaRDD<List<VocabWord>> javaRDDVocabCorpus = textPipeLineCorpus.getVocabWordListRDD(); //get tokenized corpus
 
+        //处理预料标签
+        JavaRDD<String> javaRDDLabel = jsc.textFile("./src/main/java/resources/label.txt");
+        TextPipeline textPipelineLabel = new TextPipeline(javaRDDLabel, broadcasTokenizerVarMap);   //broadcasTokenizerVarMap 需要视情况重新定义
+        textPipelineLabel.buildVocabCache();
+        textPipelineLabel.buildVocabWordListRDD();
+        Broadcast<VocabCache<VocabWord>> vocabLabel = textPipelineLabel.getBroadCastVocabCache();
+
+
         //分类标签，即标注分词
+//        JavaRDD<Tuple2<List<VocabWord>,VocabWord>> javaPairRDDVocabLabel = jsc.objectFile("./src/main/java/resources/courpus.txt");
         JavaRDD<Tuple2<List<VocabWord>,VocabWord>> javaPairRDDVocabLabel = jsc.objectFile("./src/main/java/resources/courpus.txt");
 
 
@@ -156,7 +165,10 @@ public class trainner {
         }
         FSDataOutputStream outputStream = hdfs.create(hdfsPath);
         ModelSerializer.writeModel(network, outputStream, true);
+
 /*---Finish Saving the Model------*/
+        String VocabCorpusPath = "";              //预料保存地址
+        String VocabLabelPath = "";               //标签保存地址
         VocabCache<VocabWord> saveVocabCorpus = vocabCorpus.getValue();
         VocabCache<VocabWord> saveVocabLabel = vocabLabel.getValue();
         SparkUtils.writeObjectToFile(VocabCorpusPath, saveVocabCorpus, jsc);
